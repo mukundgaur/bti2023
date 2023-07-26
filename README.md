@@ -7,5 +7,9 @@ This pipeline first takes in the raw reads from the M82 and Pennellii tomatoes, 
 
 The pipeline provides two ways to extract the reads for each parent based on the read ids: using a provided python script or the gatk package. It then assigns the reads mapped to each parent to genes of that parent using the package FeatureCounts, and provides code to extract the mean fragment length for later normalization using VDM or FPKM.
 
-## Note 
+Chunks of code are provided throughout the pipeline that return data and statistics for cross-checking and analysis, if needed.
+
+## Notes
+File paths will likely need to be changed depending on the location of reference genomes and other data. Sample.id and variations are lists of samples, and will need to be changed to the corresponding sample lists. 
+
 The final python script is an addendum used for the liftoff package to remove genes that have multiple pairings, and was not used in the read analysis pipeline. 
