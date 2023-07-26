@@ -142,8 +142,6 @@ Here, sample.id is a list of the Pennellii sample names.
 ### Map reads to Pennellii
 
 ```bash
-# Working directory
-cd /data/zhaojiantao/Carmen/Carmen_ASE/Pennellii/02map2Pennellii
 
 # Index the reference genome
 hisat2-build -f /data/zhaojiantao/Carmen/References/Pennellii/Pennellii.fa \
@@ -182,8 +180,6 @@ The two code snippets marked "same function as..." perform the same function and
 
 Here, M82.list is a list of the M82 samples. 
 ```bash
-# Working directory
-cd /data/zhaojiantao/Carmen/Carmen_ASE/Pennellii/02map2M82
 
 # Index the reference genome
 hisat2-build -f /data/zhaojiantao/Carmen/References/M82/M82.fa \
