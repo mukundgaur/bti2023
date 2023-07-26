@@ -38,6 +38,7 @@
 
 
 ## Install miniconda and others
+The following code to be run from the command line installs the necessary packages for cleaning the reads from the F1 of the M82 and Pennellii tomatoes. 
 
 ```bash
 # Working directory
@@ -65,6 +66,7 @@ mamba install -c bioconda bowtie
 ```
 
 ##  Trim adaptor and low-quality sequences, polyA and rRNA to collect only the good reads 
+This script removes adaptor, low-quality, polyA, and rRNA from the reads. The trimmomatic package is used to clean the adaptor and low-quality sequences, PRINSEQ++ is used to remove the polyA sequences, and bowtie is used to remove the rRNA sequences, since only mRNA sequences are needed for analysis. It also includes code to return the number of clean reads following the cleaning process. 
 
 ```bash
 # Working directionary
@@ -134,7 +136,9 @@ rm *R1P.fq *R2P.fq *rRNA.fq *readsID *single* *bad* *good* *R1U.fq *R2U.fq
 ```
 
 ## Mapping good reads to reference genome
+The following code provides a pipeline to map the clean reads to the reference genome of the M82 and Pennellii tomatoes. It will be necessary to change the file paths of the reference genomes to the proper file paths. It also provides code to calculate the number of reads mapped to each genome. 
 
+Here, sample.id is a list of the Pennellii sample names. 
 ### Map reads to Pennellii
 
 ```bash
@@ -174,7 +178,9 @@ done
 
 
 ### Map reads to M82
+The two code snippets marked "same function as..." perform the same function and return the total clean reads. It is not necessary to run both. Note that hisat and samtools are both running on 100 threads in this code snippet, which may need to be changed depending on the capabilities of your system. 
 
+Here, M82.list is a list of the M82 samples. 
 ```bash
 # Working directory
 cd /data/zhaojiantao/Carmen/Carmen_ASE/Pennellii/02map2M82
@@ -216,12 +222,13 @@ done
 
 
 ## Compare mismatch counts for each read aligned to the M82 and Pennellii genome to assign each read to the genome with a lower mismatch value
-For each read, extracts and compares the number of base pairs tbat are mismatched with each genome and assigns the read to the genome with lower mismatch count.
+For each read, extracts and compares the number of base pairs that are mismatched with each genome and assigns the read to the genome with lower mismatch count.
 
 ### Python script to average all lines with the same IDs
-Averages the mismatch counts for the same IDs in each genome. 
+Averages the mismatch counts for the same IDs in each genome for later comparison and assignment. Multi-threading and multi-processing capabilities are provided, although multi-threading may not work as intended due to the possibility of chunks being cut between the same ids. The multi-processing script will prevent this, and is highly recommended for efficiency.
 
 #### Standard script
+Uses a single thread. 
 ```py
 import sys
 
@@ -267,7 +274,7 @@ if (run):
 ```
 
 #### Using multi-threading
-Multi-threading is not recommended and may provide incorrect output. For capability to run on multiple CPUs, use multi-processing script instead. 
+Multi-threading is not recommended and may provide incorrect output. For capability to run on multiple CPUs, use multi-processing script instead.
 ```py
 import sys
 import threading
@@ -340,6 +347,7 @@ if run:
 ```
 
 #### Multi processing
+Will provide the most efficient method of averaging mismatch values. Changing the variable num_processes will change the number of required CPUs. 
 ```py
 import sys
 import multiprocessing
@@ -423,9 +431,11 @@ if run:
 ```
 
 ### Assign reads to the genome for which they have a lower average mismatch count
-Extracts only the ids and corresponding mismatch counts from each file. Then, for each id, uses the provided multi-processing script above to average the mismatch counts for each parent, compare the mismatch counts for each parent, and assigns the read to the parent with a lower mismatch count. 
+Extracts only the ids and corresponding mismatch counts from each file. Then, for each id, uses the provided multi-processing script above to average the mismatch counts for each parent, compare the mismatch counts for each parent, and assigns the read to the parent with a lower mismatch count. Note that the averaging script is called multi.mismatch.compare.py here, but the program name should be changed to the name of your corresponding program. Also note that the sametools command is using 20 threads, but this may need to be changed depending on the capabilities and limitations of your processing system. 
+
+Here, sample.id is a list of all sample names. 
 ```bash
-for i in $(cat sample3.id); do
+for i in $(cat sample.id); do
 
         # Read bam files for Pennellii mapping and create a file of ids and corresponding mismatch counts
         samtools view -@ 20 ../02map2Pennellii/$i.clean.bam | grep "NM:i" | cut -f 1 > $i.clean.bam.ids.Pennellii
@@ -453,6 +463,7 @@ for i in $(cat sample3.id); do
 ```
 
 ## Find number of ids mapped to Pennellii and M82 
+Extracts the number of read ids mapped to each parent. Here, sample.id is a list of all sample names.
 ```bash
 for i in $(cat sample.id); do 
         wc -l $i.ids.map2M82 | cut -d ' ' -f 1
@@ -462,9 +473,10 @@ for i in $(cat sample.id); do
 
 ```
 ## Extract reads mapped to Pennellii and M82 based on ids mapped to each parent using mismatch counts
-Extracts reads from original bam file and assigns them to each parents based on the assignment of their corresponding id. 
+Extracts reads from original bam file and assigns them to each parents based on the assignment of their corresponding id. Two methods are provided, one using the package gatk, and the other using a python script. The python script is slightly more efficient and produces smaller files, but the content of the output is the same. The python script may require a virtual environment, and does require the BAM files to be sorted and indexed, however, which may increase computing time if not already done. 
 
 ### Uses gatk package to extract corresponding reads
+Runs on one thread. sample4.id is the list of samples. 
 ```bash
 # Creates two files with the bam information of mapped ids 
 for i in $(cat sample4.id); do
@@ -479,6 +491,7 @@ done
 ### Python script to extract corresponding reads
 
 #### Script without multi-processing
+Does not run more efficiently than gatk, multiple threads are necessary to achieve superior computing time. 
 ```py
 # Requires virtual environment: conda activate myenv
 
@@ -512,7 +525,7 @@ extract_reads_by_ids(arguments[1], arguments[2], arguments[3])
 
 
 #### Python script using multi processing
-Runs more efficiently and output files take up less space as compared to gatk. Content of the output from both files is identical. 
+Note that a higher number of processes will not necessarily reduce the computing time and may even increase it. Depending on the size of the file, a specific number of processes greater than one ususally provides peak efficiency. 
 ```py
 import pysam
 import sys
@@ -553,6 +566,7 @@ if __name__ == '__main__':
 
 
 ### Extracts and maps reads using python program
+The following code uses the provided multi-processing python script to extract the reads mapped to Pennellii and M82. Note that they will need to be sorted and indexed first, and the number of threads used for this can be changed in the samtools sort and samtools index parameters. 
 ```bash
 # Prepare bam files for python code by sorting and indexing
 for i in $(cat sample.id); do
@@ -635,7 +649,7 @@ done
 
 
 ## Liftoff
-
+Note that this does not relate to the read analysis above, and can be used to remove genes with multiple pairings after using the Liftoff program. 
 ### Code to remove genes with multiple pairings
 ```py
 with open("PennelliiAllLiftedData", "r") as alldata, open("Pennelliicleanedliftedata", "w") as cleandata:
