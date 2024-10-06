@@ -1,5 +1,7 @@
 # bti2023
 
+## [Final Research Poster](https://drive.google.com/file/d/1cSruEZ3WdV1Nz9V91iwSuYPOoiIE6InE/view?usp=sharing)
+
 ## Pipeline Description and Function
 This code provides a pipeline for the analysis of reads from the F1 of the M82 and Pennellii tomatoes and assigning of reads to each parent. It is intended to be run from a Linux command line. Python programs included for the analysis of specific data are also meant to be run from the command line, and are followed by code to prepare data for the programs and then run the programs from the command line. All python programs are included with multi-processing capability and as a single-thread version. 
 
